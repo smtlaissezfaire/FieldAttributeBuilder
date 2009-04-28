@@ -1,6 +1,8 @@
 module FieldAttributeBuilder
-  def field_attr_builder(association_name, object = self)
-    FieldAttributeCreator.install(object, association_name)
+  module ActiveRecordExtensions
+    def field_attr_builder(association_name, object = self)
+      FieldAttributeCreator.install(object, association_name)
+    end
   end
 
   class FieldAttributeCreator

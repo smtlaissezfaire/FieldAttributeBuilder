@@ -1,2 +1,1 @@
-
-ActiveRecord::Base.extend FieldAttributeBuilder
+ActiveRecord::Base.extend FieldAttributeBuilder::ActiveRecordExtensions

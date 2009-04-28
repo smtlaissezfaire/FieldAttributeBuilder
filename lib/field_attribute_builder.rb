@@ -1,4 +1,10 @@
 module FieldAttributeBuilder
+  VERSION = "#{MAJOR}.#{MINOR}.#{TINY}"
+
+  MAJOR = 0
+  MINOR = 0
+  TINY  = 1
+
   module ActiveRecordExtensions
     def field_attr_builder(association_name, object = self)
       FieldAttributeCreator.install(object, association_name)

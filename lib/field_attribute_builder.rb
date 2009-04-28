@@ -28,7 +28,7 @@ module FieldAttributeBuilder
     end  
   
     def install_methods
-      @model.class_eval <<-HERE
+      @model.class_eval <<-HERE, __FILE__, __LINE__
         def new_#{@singular_name}_attributes=(attribute_groups)
           attribute_groups.each { |attrs| #{@association_name}.build(attrs) }
         end

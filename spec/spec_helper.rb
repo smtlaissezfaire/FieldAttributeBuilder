@@ -13,6 +13,24 @@ ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database  => ':m
 ActiveRecord::Migration.verbose = false
 
 ActiveRecord::Schema.define do
+  create_table :posts do |t|
+    t.text :body
+    t.timestamps
+  end
+
+  create_table :comments do |t|
+    t.text :body
+    t.integer :post_id
+    t.timestamps
+  end
+end
+
+class Post < ActiveRecord::Base
+  has_many :comments
+end
+
+class Comment < ActiveRecord::Base
+  belongs_to :post
 end
 
 

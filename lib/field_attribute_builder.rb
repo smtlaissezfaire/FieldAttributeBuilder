@@ -11,6 +11,49 @@ module FieldAttributeBuilder
     end
   end
 
+  class AttributeAssigner
+    def self.assign(*args)
+      new(*args).assign
+    end
+
+    def initialize(object, singular_name, association_name, attribute_groups)
+      @object = object
+      @singular_name = singular_name
+      @association_name = association_name
+      @attribute_groups = attribute_groups
+    end
+
+    def assign
+      if @object.new_record?
+        assign_new_record
+      else
+        assign_existing_record
+      end
+    end
+
+    def assign_new_record
+      @attribute_groups.each { |attrs| association.build(attrs) }
+    end
+
+  private
+
+    def association
+      @object.send(@association_name)
+    end
+
+    def assign_existing_record
+      records = association.reject { |obj| obj.new_record? }
+
+      records.each do |record|
+        if attributes = @attribute_groups[record.id.to_s]
+          record.attributes = attributes
+        else
+          record.delete
+        end
+      end
+    end
+  end
+
   class FieldAttributeCreator
     def self.install(model, association_name)
       new(model, association_name).install
@@ -25,31 +68,24 @@ module FieldAttributeBuilder
     def install
       install_methods
       register_callback
-    end  
-  
-    def install_methods
-      @model.class_eval <<-HERE, __FILE__, __LINE__
-        def new_#{@singular_name}_attributes=(attribute_groups)
-          attribute_groups.each { |attrs| #{@association_name}.build(attrs) }
-        end
-  
-        def existing_#{@singular_name}_attributes=(attribute_groups)
-          records = #{@association_name}.reject { |obj| obj.new_record? }
-       
-          records.each do |record|
-            if attributes = attribute_groups[record.id.to_s]
-              record.attributes = attributes
-            else
-              records.delete(record)
-            end
-          end
-        end
-        
-      private
+    end
 
+    def install_methods
+      singular_name = @singular_name
+      association_name = @association_name
+
+      @model.class_eval do
+        define_method :"#{singular_name}_attributes=" do |attribute_groups|
+          FieldAttributeBuilder::AttributeAssigner.assign(self, singular_name, association_name, attribute_groups)
+        end
+      end
+
+      @model.class_eval <<-HERE, __FILE__, __LINE__
         def save_#{@association_name}
           #{@association_name}.each { |obj| obj.save(false) }
         end
+
+        private :#{callback_name}
       HERE
     end
   

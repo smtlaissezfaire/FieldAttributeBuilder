@@ -12,10 +12,11 @@ describe FieldAttributeBuilder do
       Post.class_eval do
         field_attr_builder :comments
       end
+      
+      @post = Post.new
     end
 
     it "should save the associated records" do
-      @post = Post.new
       comment = @post.comments.build
       
       @post.save!
@@ -25,7 +26,6 @@ describe FieldAttributeBuilder do
     end
 
     it "should build one new record" do
-      @post = Post.new
       @post.new_comment_attributes = [{ :body => "foo" }]
       
       @post.comments.size.should == 1
@@ -33,10 +33,38 @@ describe FieldAttributeBuilder do
     end
 
     it "should build multiple records" do
-      @post = Post.new
       @post.new_comment_attributes = [{ :body => "foo" }, { :body => "bar"} ]
 
       @post.comments.size.should == 2
+    end
+    
+    it "should build empty attributes" do
+      @post.new_comment_attributes = [{:body => ""}]
+      @post.comments.size.should == 1
+    end
+  end
+  
+  describe "rejecting empty attributes" do
+    before do
+      Post.class_eval do
+        field_attr_builder :comments, :reject_empty => true
+      end
+    end
+    
+    describe "with new records" do
+      before do
+        @post = Post.new
+      end
+      
+      it "should build one regularly" do
+        @post.new_comment_attributes = [{:body => "foo"}]
+        @post.comments.size.should == 1
+      end
+      
+      it "should not build one if all of the attributes are empty" do
+        @post.new_comment_attributes = [{:body => ""}]
+        @post.comments.size.should == 0
+      end
     end
   end
 end

@@ -43,7 +43,7 @@ module FieldAttributeBuilder
             if attributes = attribute_groups[record.id.to_s]
               record.attributes = attributes
             else
-              records.delete(record)
+              #{@association_name}.delete(record)
             end
           end
         end

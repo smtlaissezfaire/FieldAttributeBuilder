@@ -65,6 +65,18 @@ describe FieldAttributeBuilder do
         @post.new_comment_attributes = [{:body => ""}]
         @post.comments.size.should == 0
       end
+      
+      it "should delete records which were previously saved, but are no longer passed" do
+        @post = Post.new
+        @post.save!
+        @post.comments.create!
+        @post.reload
+      
+        @post.existing_comment_attributes = {}
+        @post.reload
+      
+        @post.comments.size.should == 0
+      end
     end
   end
 end
